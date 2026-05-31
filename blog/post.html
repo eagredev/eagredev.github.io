@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upstream — Eagre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../blog.css" />
+</head>
+<body class="up">
+  <div class="up-bg"></div>
+  <svg class="up-tide" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.14" />
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    <path fill="none" stroke="var(--accent)" stroke-opacity="0.10" stroke-width="1.5"
+      d="M0,160 C240,100 480,220 720,160 C960,100 1200,220 1440,160">
+      <animate attributeName="d" dur="11s" repeatCount="indefinite"
+        values="M0,160 C240,100 480,220 720,160 C960,100 1200,220 1440,160;
+                M0,160 C240,220 480,100 720,160 C960,220 1200,100 1440,160;
+                M0,160 C240,100 480,220 720,160 C960,100 1200,220 1440,160" />
+    </path>
+    <path fill="url(#tg)"
+      d="M0,200 C240,150 480,250 720,200 C960,150 1200,250 1440,200 L1440,320 L0,320 Z">
+      <animate attributeName="d" dur="13s" repeatCount="indefinite"
+        values="M0,200 C240,150 480,250 720,200 C960,150 1200,250 1440,200 L1440,320 L0,320 Z;
+                M0,200 C240,250 480,150 720,200 C960,250 1200,150 1440,200 L1440,320 L0,320 Z;
+                M0,200 C240,150 480,250 720,200 C960,150 1200,250 1440,200 L1440,320 L0,320 Z" />
+    </path>
+  </svg>
+
+  <div class="up-shell">
+    <nav class="up-nav">
+      <a class="up-home" href="../index.html">
+        <span class="logo">eagre<span class="dot">.</span></span>
+        <span class="back">← workbench</span>
+      </a>
+      <div class="up-navlinks">
+        <a href="../about.html">about</a>
+        <a href="index.html">upstream</a>
+        <a href="https://github.com/eagredev" target="_blank" rel="noopener">github</a>
+      </div>
+    </nav>
+
+    <article class="up-article" id="article"></article>
+  </div>
+
+  <script src="../js/markdown.js"></script>
+  <script src="posts.js"></script>
+  <script>
+    (function () {
+      var art = document.getElementById("article");
+      var posts = window.POSTS || [];
+      var slug = new URLSearchParams(location.search).get("p");
+      var idx = posts.findIndex(function (p) { return p.slug === slug; });
+
+      if (idx === -1) {
+        art.innerHTML =
+          '<a class="up-art-back" href="index.html">← back to Upstream</a>' +
+          '<h1 class="up-art-title">Lost the thread</h1>' +
+          '<p class="up-art-dek">That post drifted off somewhere. Head back to the index and pick another.</p>';
+        document.title = "Not found — Upstream";
+        return;
+      }
+
+      var p = posts[idx];
+      document.title = p.title + " — Upstream";
+
+      function fmtDate(s) {
+        var d = new Date(s + "T00:00:00");
+        return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      }
+      var tags = (p.tags || []).map(function (t) { return '<span class="up-tag">' + t + '</span>'; }).join("");
+
+      // newer = idx-1, older = idx+1 (list is newest first)
+      var newer = posts[idx - 1];
+      var older = posts[idx + 1];
+      var pager = "";
+      if (older) pager += '<a href="post.html?p=' + encodeURIComponent(older.slug) + '"><div class="dir">← older</div><div class="nm">' + older.title + '</div></a>';
+      if (newer) pager += '<a class="next" href="post.html?p=' + encodeURIComponent(newer.slug) + '"><div class="dir">newer →</div><div class="nm">' + newer.title + '</div></a>';
+
+      art.innerHTML =
+        '<a class="up-art-back" href="index.html">← Upstream</a>' +
+        '<div class="up-art-meta">' +
+          '<span class="dt">' + fmtDate(p.date) + '</span>' +
+          '<span class="sep"></span><span>' + p.mins + ' min read</span>' +
+          (tags ? '<span class="sep"></span>' + tags : '') +
+        '</div>' +
+        '<h1 class="up-art-title">' + p.title + '</h1>' +
+        '<p class="up-art-dek">' + p.dek + '</p>' +
+        '<div class="up-body">' + window.renderMarkdown(p.body) + '</div>' +
+        '<footer class="up-foot">' +
+          '<div class="up-typeset"><span class="led"></span>typeset by <b>inkmd</b> — the same renderer behind the workbench demo</div>' +
+          '<div class="up-pager">' + pager + '</div>' +
+        '</footer>';
+
+      window.scrollTo(0, 0);
+    })();
+  </script>
+
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#0c0e12"/>
+      <path d="M10,62 C30,46 50,78 70,62 C82,53 90,62 90,62" fill="none" stroke="#35d6c8" stroke-width="3"/>
+      <text x="50" y="46" font-family="monospace" font-size="22" font-weight="700" fill="#e7ebf1" text-anchor="middle">↟</text>
+    </svg>
+  </template>
+</body>
+</html>

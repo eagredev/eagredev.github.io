@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upstream — Eagre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../blog.css" />
+</head>
+<body class="up">
+  <div class="up-bg"></div>
+  <svg class="up-tide" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.14" />
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    <path fill="none" stroke="var(--accent)" stroke-opacity="0.10" stroke-width="1.5"
+      d="M0,160 C240,100 480,220 720,160 C960,100 1200,220 1440,160">
+      <animate attributeName="d" dur="11s" repeatCount="indefinite"
+        values="M0,160 C240,100 480,220 720,160 C960,100 1200,220 1440,160;
+                M0,160 C240,220 480,100 720,160 C960,220 1200,100 1440,160;
+                M0,160 C240,100 480,220 720,160 C960,100 1200,220 1440,160" />
+    </path>
+    <path fill="url(#tg)"
+      d="M0,200 C240,150 480,250 720,200 C960,150 1200,250 1440,200 L1440,320 L0,320 Z">
+      <animate attributeName="d" dur="13s" repeatCount="indefinite"
+        values="M0,200 C240,150 480,250 720,200 C960,150 1200,250 1440,200 L1440,320 L0,320 Z;
+                M0,200 C240,250 480,150 720,200 C960,250 1200,150 1440,200 L1440,320 L0,320 Z;
+                M0,200 C240,150 480,250 720,200 C960,150 1200,250 1440,200 L1440,320 L0,320 Z" />
+    </path>
+  </svg>
+
+  <div class="up-shell">
+    <nav class="up-nav">
+      <a class="up-home" href="../index.html">
+        <span class="logo">eagre<span class="dot">.</span></span>
+        <span class="back">← workbench</span>
+      </a>
+      <div class="up-navlinks">
+        <a href="../about.html">about</a>
+        <a href="index.html" aria-current="page">upstream</a>
+        <a href="https://github.com/eagredev" target="_blank" rel="noopener">github</a>
+      </div>
+    </nav>
+
+    <header class="up-head">
+      <div class="up-kicker"><span class="wave"></span>the log</div>
+      <h1 class="up-title">Upstream<span class="dot">.</span></h1>
+      <p class="up-dek">Notes from building developer tooling and LLM agents by directing AI end to end. On <em>zero-dependency design</em>, security boundaries, and the craft of reviewing output you didn't type. Typeset by inkmd.</p>
+    </header>
+
+    <main class="up-list" id="list"></main>
+  </div>
+
+  <script src="../js/markdown.js"></script>
+  <script src="posts.js"></script>
+  <script>
+    (function () {
+      var list = document.getElementById("list");
+      var posts = (window.POSTS || []).slice();
+      if (!posts.length) {
+        list.innerHTML = '<p class="up-empty">No posts yet — the tide is still coming in.</p>';
+        return;
+      }
+      function fmtDate(s) {
+        var d = new Date(s + "T00:00:00");
+        return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      }
+      list.innerHTML = posts.map(function (p) {
+        var tags = (p.tags || []).map(function (t) { return '<span class="up-tag">' + t + '</span>'; }).join("");
+        return '<a class="up-post" href="post.html?p=' + encodeURIComponent(p.slug) + '">' +
+          '<div class="up-meta">' +
+            '<span class="dt">' + fmtDate(p.date) + '</span>' +
+            '<span class="sep"></span>' +
+            '<span>' + p.mins + ' min</span>' +
+            (tags ? '<span class="sep"></span>' + tags : '') +
+          '</div>' +
+          '<h2 class="up-ptitle">' + p.title + '</h2>' +
+          '<p class="up-pdek">' + p.dek + '</p>' +
+          '<span class="up-readmore">read →</span>' +
+        '</a>';
+      }).join("");
+    })();
+  </script>
+
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#0c0e12"/>
+      <path d="M10,62 C30,46 50,78 70,62 C82,53 90,62 90,62" fill="none" stroke="#35d6c8" stroke-width="3"/>
+      <text x="50" y="46" font-family="monospace" font-size="22" font-weight="700" fill="#e7ebf1" text-anchor="middle">↟</text>
+    </svg>
+  </template>
+</body>
+</html>
