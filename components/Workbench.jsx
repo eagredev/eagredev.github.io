@@ -3,8 +3,8 @@ const { useState } = React;
 
 const PROJECTS = [
   { id: "inkmd",    nm: "inkmd",    ds: "markdown → pdf, deterministic",        spec: ["pure-python", "zero-dep", "788 tests"], repo: "https://github.com/eagredev/inkmd" },
-  { id: "nightjar", nm: "Nightjar", ds: "autonomous agent, signed channel",     spec: ["ed25519", "defence-in-depth", "24/7"],  repo: "https://github.com/eagredev/nightjar" },
-  { id: "torch",    nm: "TORCH",    ds: "rom-hacking ide · TorScript",          spec: ["140 modules", "custom dsl", "bidirectional"], repo: "https://github.com/eagredev/TORCH" },
+  { id: "nightjar", nm: "Nightjar", ds: "email agent · human-in-the-loop",     spec: ["DMARC + HOTP", "drafts only", "24/7"],  repo: "https://github.com/eagredev/nightjar" },
+  { id: "torch",    nm: "TORCH",    ds: "rom-hacking ide · TorScript \u2192 poryscript",          spec: ["140 modules", "custom dsl", "\u2192 poryscript"], repo: "https://github.com/eagredev/TORCH" },
 ];
 
 function Workbench() {

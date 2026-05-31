@@ -10,7 +10,7 @@ dependencies, *byte-deterministic*.
 
 - Render is ~6x faster than WeasyPrint
 - Installs in under a second (~10 MB)
-- Runs on Lambda, Alpine, a ~Steam Deck~ anything
+- Runs on Lambda, Alpine, ~~a Steam Deck~~ anything
 
 > No Chrome binary. No \`apt-get\`. No system fonts.
 

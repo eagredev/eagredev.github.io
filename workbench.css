@@ -303,7 +303,9 @@
 }
 .nj-reply.show { opacity: 1; transform: none; }
 .nj-reply .from { font-size: 10.5px; color: var(--accent-2); margin-bottom: 6px; letter-spacing: .03em; }
+.nj-reply .from.muted { color: var(--text-mute); }
 .nj-reply .sig { margin-top: 9px; font-size: 10px; color: var(--text-mute); border-top: 1px dashed var(--border-2); padding-top: 8px; word-break: break-all; }
+.nj-reply .nj-note { margin-top: 9px; font-size: 10.5px; color: var(--text-mute); border-top: 1px dashed var(--border-2); padding-top: 8px; line-height: 1.5; }
 
 .nj-presets { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 4px; }
 .nj-preset {
@@ -312,6 +314,27 @@
   border-radius: 999px; padding: 4px 10px; transition: all .14s;
 }
 .nj-preset:hover { color: var(--text); border-color: var(--border-2); }
+
+/* sender role selector */
+.nj-roles {
+  display: flex; gap: 2px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 2px;
+}
+.nj-roles button {
+  border: 0; background: transparent; color: var(--text-mute);
+  font-family: var(--font-mono); font-size: 10.5px;
+  padding: 4px 9px; border-radius: 6px; transition: color .14s, background .14s;
+}
+.nj-roles button:hover { color: var(--text-dim); }
+.nj-roles button[aria-pressed="true"] { background: var(--surface-3); color: var(--text); }
+.nj-addr {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 14px 2px; font-size: 11px;
+}
+.nj-addr .who { color: var(--text-dim); font-family: var(--font-mono); }
+.nj-addr .scope { color: var(--text-mute); }
+.nj-addr .scope.danger { color: #e0795f; }
 
 /* ---------- torch demo ---------- */
 .torch { width: 100%; }
@@ -338,25 +361,33 @@
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(7, 1fr);
-  gap: 1px; padding: 8px;
+  gap: 0; padding: 8px;
 }
-.gba-tile { border-radius: 2px; }
+.gba-tile { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18); }
+.gba-actors { position: absolute; inset: 8px; pointer-events: none; }
 .gba-npc {
   position: absolute; width: 9%; aspect-ratio: 1; border-radius: 3px;
+  transform: translate(-50%, -50%);
   background: var(--accent); box-shadow: 0 0 10px color-mix(in oklab,var(--accent) 60%,transparent);
   transition: left .5s cubic-bezier(.5,.1,.2,1), top .5s cubic-bezier(.5,.1,.2,1);
   display: grid; place-items: center; color: var(--accent-ink); font-size: 8px; font-weight: 700;
 }
 .gba-box {
-  margin: 0 8px 8px; min-height: 33%;
+  position: absolute; left: 8px; right: 8px; bottom: 8px;
+  min-height: 30%;
   border: 2px solid #3a4654;
   border-radius: 7px;
-  background: rgba(8,16,15,0.92);
+  background: rgba(8,16,15,0.94);
   padding: 9px 11px;
   font-size: 11px; line-height: 1.5; color: #cfeee9;
-  position: relative;
 }
-.gba-box .who { color: var(--accent); font-size: 10px; margin-bottom: 3px; }
+.gba-box .gba-who { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.gba-box .who {
+  display: inline-block; background: var(--accent); color: var(--accent-ink);
+  font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 4px;
+}
+.gba-box .got { font-size: 9px; color: var(--accent-2); }
 .gba-box .tri {
   position: absolute; right: 9px; bottom: 7px;
   width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent;
@@ -365,16 +396,81 @@
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes fadein { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
-.tor-bytes {
-  font-family: var(--font-mono); font-size: 10.5px; color: var(--text-mute);
-  padding: 9px 14px; border-top: 1px solid var(--border); background: var(--bg-2);
-  white-space: pre-wrap; word-break: break-all; line-height: 1.6; flex-shrink: 0;
-  max-height: 84px; overflow: auto;
+/* TorScript syntax reference (under the editor) */
+.tor-ref {
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  padding: 11px 14px 12px;
+  flex-shrink: 0;
 }
-.tor-bytes .b { color: var(--accent-2); }
+.tor-ref h5 {
+  margin: 0 0 8px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-dim); font-weight: 600;
+}
+.tor-ref-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
+.tor-ref-grid code { font-family: var(--font-mono); font-size: 11px; color: var(--accent-2); white-space: nowrap; }
+.tor-ref-grid span { font-size: 11px; color: var(--text-mute); }
 
-/* syntax-ish highlight for editors via spans (torch info line) */
-.tor-err { color: #e0795f; padding: 8px 14px; font-size: 11px; border-top: 1px solid var(--border); background: var(--bg-2); }
+/* segmented toggle in the preview pane head */
+.tor-seg {
+  margin-left: auto; display: flex; gap: 2px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 2px;
+}
+.tor-seg button {
+  border: 0; background: transparent; color: var(--text-mute);
+  font-family: var(--font-mono); font-size: 10.5px; text-transform: none; letter-spacing: 0;
+  padding: 4px 10px; border-radius: 6px; transition: color .14s, background .14s;
+}
+.tor-seg button:hover { color: var(--text-dim); }
+.tor-seg button[aria-pressed="true"] { background: var(--surface-3); color: var(--text); }
+
+/* compiled poryscript output */
+.tor-pory {
+  flex: 1; min-height: 0; overflow: auto; margin: 0;
+  padding: 15px 17px; background: var(--bg);
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.7;
+  color: #aeb7c2; white-space: pre; tab-size: 4;
+}
+.tor-pory .k { color: var(--accent); }
+.tor-pory .s { color: #e7ebf1; }
+.tor-pory .n { color: var(--accent-2); }
+.tor-pory .c { color: var(--text-mute); font-style: italic; }
+
+/* decompile caption */
+.tor-cap {
+  font-size: 11px; line-height: 1.55; color: var(--text-mute);
+  padding: 11px 14px 13px; border-top: 1px solid var(--border);
+  background: var(--bg-2); flex-shrink: 0;
+}
+.tor-cap b { color: var(--text-dim); font-weight: 600; }
+
+/* preview: read-only stepping source with a debugger-style gutter arrow */
+.tor-run {
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  background: var(--bg); padding: 12px 0;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.75;
+}
+.tor-row { display: flex; align-items: flex-start; }
+.tor-gutter {
+  width: 24px; flex-shrink: 0; text-align: center;
+  color: var(--accent); font-weight: 700; user-select: none;
+}
+.tor-code { white-space: pre; padding-right: 14px; color: #aeb7c2; }
+.tor-edit {
+  margin-left: auto; border: 1px solid var(--border-2); background: var(--surface-2);
+  color: var(--text-dim); font-family: var(--font-mono); font-size: 10.5px;
+  text-transform: none; letter-spacing: 0; padding: 4px 12px; border-radius: 7px;
+  transition: color .14s, border-color .14s;
+}
+.tor-edit:hover { color: var(--text); border-color: var(--border); }
+
+/* second sprite — the static player protagonist */
+.gba-npc.player {
+  background: #d7dde6; color: #1a1f28;
+  box-shadow: 0 0 8px rgba(215,221,230,0.4);
+}
+.gba-box .sys { color: var(--accent); font-weight: 600; }
 
 .stage.no-grid::before { display: none; }
 

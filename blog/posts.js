@@ -36,7 +36,7 @@ The inside is a strict pipeline. Four layers, each sitting above the last, and t
 3. **\`layout\`** — wraps runs into pages and positions every glyph run against the page coordinate system: code-block backgrounds, blockquote rules, link underlines, strikethrough bars.
 4. **\`pdf\`** — serialises pages to PDF bytes. Text via the kerning operators, graphics via fills and rectangles, links via per-page annotation arrays.
 
-That's roughly 9,600 lines of pure-Python logic, plus another 4,700 lines of generated font-metric tables. The layering constraint sounds like bureaucracy until you realise it's the thing that lets you reason about any single stage in isolation — and the kind of invariant a model will happily violate the moment a human stops enforcing it.
+That's roughly 10,000 lines of pure-Python logic, plus another 4,700 lines of generated font-metric tables. The layering constraint sounds like bureaucracy until you realise it's the thing that lets you reason about any single stage in isolation — and the kind of invariant a model will happily violate the moment a human stops enforcing it.
 
 ## Byte-identical output
 
@@ -67,7 +67,7 @@ The full methodology and the benchmark script live in the repo, so you can repro
 
 ## Where it loses
 
-I'm not going to pretend it wins everywhere. WeasyPrint compresses content streams, so for long documents its PDFs come out smaller. It supports full Unicode, page-splitting CSS, and a styling model inkmd has no intention of growing. If you need CJK or Cyrillic text today, inkmd renders it as \`?\` until text-font embedding lands in a later release.
+I'm not going to pretend it wins everywhere. WeasyPrint compresses content streams, so for long documents its PDFs come out smaller. It supports full Unicode, page-splitting CSS, and a styling model inkmd has no intention of growing. Emoji are the exception that already renders (full colour, as above); for text scripts the base-14 fonts don't cover — CJK, Cyrillic — inkmd falls back to \`?\` until text-font embedding lands in a later release.
 
 The trade is deliberate, and the honest framing is "the right tool depends on your input and your environment." inkmd is the one for the environment where installing a 200MB browser isn't an option — the tool you'd write yourself over a free weekend if you refused to take that dependency, and then kept polishing until the kerning was right.`,
   },
@@ -117,50 +117,58 @@ The output looks the same as any other well-built project, because that's the po
     title: "A locked door for an autonomous agent",
     date: "2026-04-29",
     tags: ["security", "agents", "nightjar"],
-    mins: 6,
+    mins: 7,
     dek: "Nightjar is an LLM agent reachable 24/7 over email. The interesting engineering isn't the agent — it's the boundary around it.",
-    body: `An autonomous agent that anyone can reach is an autonomous agent anyone can abuse. Nightjar is reachable around the clock over an email channel, runs daily in personal production, and the part I spent the most time on is the part that says *no*.
+    body: `An autonomous agent that anyone can reach is an autonomous agent anyone can abuse. Nightjar is reachable around the clock over an email channel, runs daily in personal production, and the part I spent the most time on isn't the agent — it's everything that decides whether the agent is allowed to lift a finger.
 
-The agent itself is the easy half. Wiring a model up to a mailbox is an afternoon. Making it safe to leave running, unattended, reachable by the entire internet — that's the half that's actually engineering.
+The model itself is the easy half. Wiring Claude up to a mailbox is an afternoon. Making it safe to leave running, unattended, reachable by the entire internet — that's the half that's actually engineering. And the single most important decision behind it is this: **the agent never acts on its own. It drafts. I approve.**
 
-## The channel is the threat model
+## Spoofing dies first: DMARC
 
-Email is a wonderful interface for an assistant: asynchronous, universal, already on every device I own, no app to build. It is also a terrible medium for trust. The \`From\` header is a suggestion — anyone can put any address in it. SMTP was designed in a more innocent decade and it shows.
+Email is a wonderful interface for an assistant: asynchronous, universal, already on every device I own, no app to build. It's also a terrible medium for trust. The \`From\` header is a suggestion — anyone can put any address in it.
 
-So the channel isn't "email." It's a **cryptographically authenticated** email channel that happens to ride on top of email. The transport is the friendly, universal part. The trust comes from somewhere SMTP can't touch.
+So before anything else happens, Nightjar reads the \`Authentication-Results\` header stamped by one specific trusted mail server — Gmail's \`mx.google.com\` — and proceeds only on \`dmarc=pass\`. A forged sender doesn't earn a clever rejection somewhere deep in the pipeline; it dies at the front gate, because the gate doesn't believe the envelope.
+
+## The principal proves it's me: HOTP
+
+DMARC tells me a message genuinely came from the domain it claims. It doesn't tell me *I* sent it. For that, the principal — me — puts a six-digit one-time code in the subject line: **HOTP by default (RFC 4226)** — counter-based, not time-based — with TOTP (RFC 6238) available as a configurable alternative. The daemon verifies that code **before the LLM is ever called**, with replay protection so a captured code can't be reused.
 
 \`\`\`
-1. Ed25519 signature verified
-2. Sender on allow-list
-3. Intent within capability scope
-4. Agent reasoning
-5. Reply composed and signed
+1. DMARC pass at trusted authserv (mx.google.com)
+2. HOTP code valid (RFC 4226, checked pre-LLM)
+3. Email parsed as untrusted data
+4. Single Anthropic API call → draft_plan
+5. Plan queued for human approval (tiered)
 \`\`\`
 
-Every inbound message runs that gauntlet before a single token of reasoning happens. No valid signature, no work done — the request is dropped at the boundary with zero capabilities granted. It never reaches the model at all. The expensive, unpredictable part of the system only ever sees input that already cleared the cheap, predictable checks.
+No valid code, no work done — and repeated failures trip a dead-man's-switch counter that pauses the agent rather than letting someone grind against it. There's no signature scheme, no keyring, nothing exotic. A shared secret and a hard pre-LLM check is enough — and in security, "enough and boring" beats "novel" every time.
 
-## Defence in depth, because one layer fails
+## Everyone else: contacts, and a scope classifier
 
-Signature verification is the front door, but a front door is not a security model. The layers behind it are deliberately *independent*:
+Not every message is from me. A handful of verified contacts are allow-listed — they don't carry a one-time code; being on the list *is* their credential. But being allowed to talk to the agent is not the same as being allowed to make it do things.
 
-- The **signature** proves the message wasn't forged or tampered with in transit.
-- The **allow-list** is checked separately — a valid signature from an unknown key still goes nowhere.
-- The **capability scope** is independent of both. Even a fully authenticated, allow-listed sender can only invoke what that sender is permitted to invoke. Authentication is not authorisation.
+So a contact's message hits a **scope classifier** before any reply is drafted. In scope — scheduling, relaying a message — and the agent drafts a bounded reply. Out of scope — anything touching private data or my accounts — and it returns a **canned decline with no model call at all**. The cheapest way to stop the LLM doing something it shouldn't is to never hand it the request.
 
-Layers exist precisely because any single one can fail. If the allow-list logic has a bug, the signature still held. If a key is mishandled, the scope still bounds the blast radius. You assume each control will eventually be the one that breaks, and you make sure it isn't the only thing standing between an attacker and the action.
+> Authentication tells you who's knocking. Authorization decides which doors open. They are not the same check — and conflating them is how agents get talked into things.
 
-> The most important thing an autonomous agent can do is refuse cleanly.
+## The email is data, not instructions
 
-A refusal that's quiet, total, and early is a feature, not a failure. Most of Nightjar's value as a *safe* system is in the requests it never acts on.
+This is the idea I'd want a reviewer to leave with. Inbound email — subject, body, sender — is treated as **untrusted data**, never as commands. It reaches the model inside delimited blocks, explicitly framed as data to reason about, and the model's *only* output is a proposed plan: a \`draft_plan\`. It has no direct path to send mail, touch a calendar, or run anything.
 
-## I prior-art-reviewed the design
+Prompt injection stops being existential when the model's output can't *do* anything by itself. The worst a malicious email can achieve is to draft a bad plan — which then runs straight into the part that actually matters.
 
-Security architecture is the one place where "I'll figure it out as I go" is malpractice. The failure modes are adversarial, not random — someone is actively looking for the gap you didn't think about — and your own cleverness is the least trustworthy thing in the room.
+## The agent drafts; I approve
 
-So I designed the defence-in-depth model deliberately and reviewed it against prior art before trusting it with a live mailbox: how other people authenticate machine-to-machine channels, where comparable systems have been broken, which mistakes are common enough to have names. Originality is a liability here. You want to be boring in exactly the ways that are already known to work.
+Every action Nightjar proposes lands in a **tiered approval queue**, ranked by blast radius. Read-only summaries are light-touch. Anything irreversible needs explicit double-confirmation. Contact-triggered actions are hard-capped at tier 3 — never the irreversible tier-4 actions — and can't self-send, and crucially, **that cap is enforced in Python, not in the prompt.** A model can be argued with; an \`if\` statement cannot.
+
+So even if an email is convincing, even if the model is entirely taken in, the result is a queued draft I have to approve. The expensive, unpredictable component sits *inside* a boundary built from cheap, predictable, testable code.
+
+## One call, not a loop
+
+There's no autonomous agent loop here, chewing through tool calls until it decides it's finished. Each email triggers exactly **one** Anthropic Messages API call that returns a plan, and then control hands back to the deterministic Python around it. Bounded by construction — easier to reason about, and far easier to defend.
 
 ## Running it on myself
 
-Nightjar isn't a demo that lives in a branch. It runs daily, in production, acting on my behalf — which means the blast radius of getting this wrong is *my* inbox, *my* calendar, *my* accounts. An agent you let run unattended is a system you are fully accountable for, so the boundary around it gets the same rigour as anything that ships to someone else. Arguably more, because there's no one downstream to catch it.`,
+Nightjar isn't a demo that lives in a branch. It runs daily, in production, on my behalf — so the blast radius of getting this wrong is *my* inbox, *my* calendar, *my* accounts. An agent you leave running unattended is a system you're fully accountable for, which is why the boundary gets more rigour than the agent does. The clever part was never teaching it to act. It was making sure it can't — until I say so.`,
   },
 ];

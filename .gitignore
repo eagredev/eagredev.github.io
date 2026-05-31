@@ -1,0 +1,6 @@
+# Local working files — not part of the published site
+scraps/
+uploads/
+*.napkin
+*.napkin.thumbnail.png
+.DS_Store
