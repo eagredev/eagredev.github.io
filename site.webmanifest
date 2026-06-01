@@ -1,0 +1,14 @@
+{
+  "name": "Eagre — Dylan Moir",
+  "short_name": "Eagre",
+  "description": "Python engineer building security-conscious software and LLM agents by directing AI tooling end to end.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0c0e12",
+  "theme_color": "#0c0e12",
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

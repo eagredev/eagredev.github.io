@@ -4,6 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Upstream — Eagre</title>
+  <meta name="description" content="A post from Upstream — the eagre log, by Dylan Moir." />
+  <link rel="canonical" href="https://eagredev.github.io/blog/" />
+
+  <!-- Favicons, web-app manifest, browser UI colour -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#0c0e12" />
+
+  <!-- Open Graph / Twitter (per-post values filled in by the script below) -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Upstream — the eagre log" />
+  <meta property="og:description" content="A post from Upstream — the eagre log, by Dylan Moir." />
+  <meta property="og:url" content="https://eagredev.github.io/blog/" />
+  <meta property="og:image" content="https://eagredev.github.io/preview.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Upstream — the eagre log" />
+  <meta name="twitter:description" content="A post from Upstream — the eagre log, by Dylan Moir." />
+  <meta name="twitter:image" content="https://eagredev.github.io/preview.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -72,6 +93,20 @@
 
       var p = posts[idx];
       document.title = p.title + " — Upstream";
+
+      // keep search/share metadata in sync with the post being viewed
+      (function () {
+        var url = "https://eagredev.github.io/blog/post.html?p=" + encodeURIComponent(p.slug);
+        function setMeta(sel, val) { var m = document.querySelector(sel); if (m) m.setAttribute("content", val); }
+        setMeta('meta[name="description"]', p.dek);
+        setMeta('meta[property="og:title"]', p.title + " — Upstream");
+        setMeta('meta[property="og:description"]', p.dek);
+        setMeta('meta[property="og:url"]', url);
+        setMeta('meta[name="twitter:title"]', p.title + " — Upstream");
+        setMeta('meta[name="twitter:description"]', p.dek);
+        var c = document.querySelector('link[rel="canonical"]');
+        if (c) c.setAttribute("href", url);
+      })();
 
       function fmtDate(s) {
         var d = new Date(s + "T00:00:00");
