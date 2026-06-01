@@ -44,6 +44,11 @@
   .wb-body { display: block; }
   .demo.active { display: block; }
 
+  /* covered card: compact + comfortably padded instead of a tall raw editor */
+  .cover { min-height: 380px; }
+  .cover-inner { padding: 38px 22px; gap: 14px; }
+  .cover-blurb { font-size: 13px; }
+
   /* ---- generic two-column split -> stacked (inkmd + torch) ---- */
   .split { flex-direction: column; }
   .pane { min-width: 0; }

@@ -116,6 +116,7 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
+  position: relative;
 }
 .demo.active {
   display: flex;
@@ -124,6 +125,128 @@
 @keyframes demoin {
   from { opacity: 0; transform: translateY(8px) scale(0.995); }
   to   { opacity: 1; transform: none; }
+}
+
+/* live demo, revealed once the cover is lifted */
+.demo-live {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ---------- demo cover (the wrapper visitors unwrap) ---------- */
+.cover {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: auto;
+  z-index: 3;
+  background:
+    radial-gradient(820px 360px at 50% -12%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--surface-2), var(--bg-2));
+}
+.cover--lift {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  animation: coverlift .48s cubic-bezier(.4, 0, .2, 1) forwards;
+}
+@keyframes coverlift {
+  to { opacity: 0; transform: translateY(-16px) scale(1.015); }
+}
+.cover-inner {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 560px;
+  padding: clamp(22px, 3.4vw, 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+.cover-kick {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.cover-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(32px, 4.8vw, 48px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+.cover-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--accent);
+}
+.cover-blurb {
+  margin: 2px 0 0;
+  max-width: 52ch;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  text-wrap: pretty;
+}
+.cover-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.cover-spec {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface) 55%, transparent);
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+.cover-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 6px;
+}
+.cover-open {
+  font-size: 13px;
+  padding: 11px 18px;
+}
+.cover-open-ic { font-size: 11px; }
+.cover-repo {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color .16s, border-color .16s;
+}
+.cover-repo:hover {
+  color: var(--accent);
+  border-bottom-color: color-mix(in oklab, var(--accent) 50%, transparent);
+}
+.cover-foot {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-mute);
 }
 
 /* shared split layout */
