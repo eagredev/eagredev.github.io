@@ -1,0 +1,91 @@
+/* ============================================================
+   Eagre — mobile layer. EVERY rule lives inside the media query,
+   so screens wider than 760px get NOTHING from this file and the
+   desktop design is byte-for-byte unchanged.
+   Approach: on phones the fixed "instrument" becomes a normal
+   scrollable page; the two-column demos stack into one column.
+   ============================================================ */
+
+@media (max-width: 760px) {
+
+  /* ---- let the home page scroll instead of a fixed letterboxed stage ---- */
+  html, body { height: auto; overflow-y: auto; overflow-x: hidden; }
+
+  .stage {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 13px 30px;
+    gap: 14px;
+  }
+  .stage::before { mask-image: radial-gradient(120% 50% at 50% 0%, #000 30%, transparent 80%); }
+  .tide { height: 30vh; }
+
+  /* header / footer wrap gracefully */
+  .topbar { flex-wrap: wrap; row-gap: 10px; }
+  .wordmark { width: 100%; }
+  .botbar { flex-wrap: wrap; row-gap: 8px; }
+  .bottomright { margin-left: 0; }
+
+  /* center area is just a block now */
+  .centerwrap { display: block; flex: none; min-height: 0; }
+
+  /* ---- workbench: full-width, content-tall card ---- */
+  .workbench {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+  .wb-head { flex-wrap: wrap; row-gap: 6px; }
+  .wb-title { font-size: 11px; }
+  .wb-body { display: block; }
+  .demo.active { display: block; }
+
+  /* ---- generic two-column split -> stacked (inkmd + torch) ---- */
+  .split { flex-direction: column; }
+  .pane { min-width: 0; }
+  .pane + .pane { border-left: 0; border-top: 1px solid var(--border); }
+
+  /* editors (inkmd / nightjar / torch-edit) get a usable fixed height */
+  .editor { flex: none; height: 190px; }
+
+  /* ---- inkmd ---- */
+  .pane-scroll { flex: none; min-height: 280px; max-height: 64vh; }
+  .ink-page { margin: 12px; min-height: 0; }
+
+  /* ---- nightjar ---- */
+  .nj { height: auto; }
+  .nj-wrap { flex-direction: column; flex: none; }
+  .nj-compose { width: 100%; border-right: 0; border-bottom: 1px solid var(--border); }
+  .nj-compose .editor { height: 120px; }
+  .nj-body { flex: none; min-height: 320px; }
+  .nj-log { min-height: 0; }
+
+  /* ---- torch ---- */
+  .tor-run { flex: none; height: 230px; }
+  .tor-pory { flex: none; min-height: 220px; max-height: 56vh; }
+  .gba { min-height: 300px; }
+  .tor-ref { }
+
+  /* ---- Upstream (blog) + About: already column layouts, light polish ---- */
+  .up-shell { padding: 18px 16px 90px; }
+  .up-nav { flex-wrap: wrap; row-gap: 12px; }
+  .up-bg::before { background-size: 32px 32px; }
+
+  .ab-principles { grid-template-columns: 1fr; }
+  .ab-work-top { gap: 8px; }
+  .ab-contact { gap: 8px; }
+  .ab-contact a { font-size: 12px; padding: 10px 13px; }
+}
+
+/* very small phones: tighten a touch more */
+@media (max-width: 420px) {
+  .wordmark .logo { font-size: 22px; }
+  .link-pill { padding: 7px; }
+  .nav-link { padding: 7px 5px; }
+  .wb-tab { padding: 8px 11px; }
+  .editor { height: 160px; }
+}
