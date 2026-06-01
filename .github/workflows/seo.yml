@@ -1,0 +1,41 @@
+name: Build machine-readable blog content
+
+# Whenever a post (or the generator) changes, regenerate the hidden full-text
+# block in blog/index.html so crawlers and AI agents always see current posts.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "blog/posts.js"
+      - "js/markdown.js"
+      - "scripts/build-seo.js"
+      - ".github/workflows/seo.yml"
+  workflow_dispatch: {} # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write # needed to commit the regenerated file back
+
+jobs:
+  build-seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Regenerate hidden SEO block
+        run: node scripts/build-seo.js
+
+      - name: Commit if changed
+        run: |
+          if [ -n "$(git status --porcelain blog/index.html)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add blog/index.html
+            git commit -m "chore: regenerate blog SEO block [skip ci]"
+            git push
+          else
+            echo "blog/index.html already up to date — nothing to commit."
+          fi
