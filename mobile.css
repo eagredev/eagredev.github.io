@@ -75,7 +75,20 @@
   .tor-run { flex: none; height: 230px; }
   .tor-pory { flex: none; min-height: 220px; max-height: 56vh; }
   .gba { min-height: 300px; }
-  .tor-ref { }
+
+  /* reference: the auto 1fr grid starves the description column on narrow
+     screens — stack each entry as code-over-description instead */
+  .tor-ref-grid { grid-template-columns: 1fr; gap: 0; }
+  .tor-ref-grid code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    margin-top: 10px;
+  }
+  .tor-ref-grid code:first-child { margin-top: 0; }
+  .tor-ref-grid span {
+    margin-bottom: 2px;
+    color: var(--text-dim);
+  }
 
   /* ---- Upstream (blog) + About: already column layouts, light polish ---- */
   .up-shell { padding: 18px 16px 90px; }
