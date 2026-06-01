@@ -33,6 +33,105 @@
   <link rel="stylesheet" href="../mobile.css" />
 </head>
 <body class="up">
+  <!-- ============================================================
+       Machine-readable content layer.
+       Full text of every Upstream post, for search engines and AI
+       agents that do not run JavaScript (the live list below is drawn
+       by JS and invisible to them). Hidden from human visitors via the
+       `hidden` attribute. GENERATED FROM posts.js — when you add or
+       edit a post, regenerate this block so it stays truthful.
+       ============================================================ -->
+  <div id="seo-content" hidden>
+    <p>Full text of the Upstream log — notes on building developer tooling and LLM agents by directing AI end to end, by Dylan Moir (Eagre).</p>
+
+    <article>
+      <h2>Zero dependencies, on purpose</h2>
+      <p><em>31 May 2026 · 8 min read · inkmd, python, pdf</em></p>
+      <p>Markdown-to-PDF is a solved problem in theory and a minefield in practice. inkmd is the version that survives the trip into a locked-down container.</p>
+      <p>Every markdown-to-PDF tool I reached for wanted something from the system. Chrome headless wants 200MB and a five-second cold start. WeasyPrint wants Pango, cairo, and GObject — half a gigabyte of packages that quietly break on Alpine and Windows. Pandoc wants a LaTeX install measured in gigabytes. wkhtmltopdf has been deprecated since 2023 and carries unpatched CVEs.</p>
+      <p>None of that survives the trip into an Alpine container, a Lambda function, or a CI runner without admin rights. The whole category had quietly agreed that "convert markdown to a PDF" was allowed to mean "install a browser." So I wrote the one I wished existed.</p>
+      <h2>The constraint <em>is</em> the feature</h2>
+      <p><code>inkmd</code> is a single pure-Python wheel. No native extensions, no system libraries, no fonts to install. It installs in under a second and runs anywhere Python runs — macOS, Linux, Windows, Alpine, Lambda, a Steam Deck.</p>
+      <pre><code>pip install inkmd
+      inkmd in.md -o out.pdf</code></pre>
+      <p>That's the whole install. The public API is two functions: a CLI, and a <code>compile()</code> you can call directly from Python. An LLM agent that needs to hand back a PDF — a CV, a report, a summary — can call it in-process. No subprocess, no shell-out, no browser to cold-start. There's also a single-file zipapp of around 300KB you can drop onto any machine with Python 3.9+ and run without installing anything at all.</p>
+      <p>Refusing dependencies isn't austerity for its own sake. Every dependency is a thing that can break on a platform you didn't test, a license you have to honour, a CVE you have to track. Zero of them is a number that stays true.</p>
+      <h2>Four layers, nothing circular</h2>
+      <p>The inside is a strict pipeline. Four layers, each sitting above the last, and the rule that holds the whole thing together is that <strong>no layer imports a higher one</strong>:</p>
+      <ol><li><strong><code>parser</code></strong> — a single-pass, container-aware block parser plus a CommonMark inline tokeniser, producing a frozen-dataclass AST.</li><li><strong><code>render</code></strong> — lowers AST blocks to records with runs, spacing, indent, and decorations, carrying font and link state through inline nesting.</li><li><strong><code>layout</code></strong> — wraps runs into pages and positions every glyph run against the page coordinate system: code-block backgrounds, blockquote rules, link underlines, strikethrough bars.</li><li><strong><code>pdf</code></strong> — serialises pages to PDF bytes. Text via the kerning operators, graphics via fills and rectangles, links via per-page annotation arrays.</li></ol>
+      <p>That's roughly 10,000 lines of pure-Python logic, plus another 4,700 lines of generated font-metric tables. The layering constraint sounds like bureaucracy until you realise it's the thing that lets you reason about any single stage in isolation — and the kind of invariant a model will happily violate the moment a human stops enforcing it.</p>
+      <h2>Byte-identical output</h2>
+      <p>The part I care about most: the same markdown produces the same PDF <em>bytes</em>, on every platform, every Python version, every run. No real-time clocks. No random object IDs. No platform-dependent iteration order.</p>
+      <blockquote><p>Hash the markdown, hash the PDF, and the relationship is stable forever.</p></blockquote>
+      <p>Most renderers can't promise this, because they're wrapping something they don't control, and that something reaches for the clock. Determinism turns a PDF into something you can put under version control, sign, or drop into an audit trail — where "the same input produced the same output" is the entire point.</p>
+      <h2>The font problem nobody warns you about</h2>
+      <p>PDF guarantees fourteen base fonts — Helvetica, Times, Courier and their variants — are present in every conforming reader. inkmd uses those, which is why it ships no font files and stays tiny. The catch is that the <em>exact</em> glyph shapes depend on which Helvetica the reader's system provides: macOS ships the real thing, Linux usually substitutes Nimbus Sans.</p>
+      <p>The trick is that the advance widths are published in the standard AFM metrics, and inkmd emits them as real kerning via the PDF text operators. So line wrapping, page breaks, and paragraph flow are <em>identical</em> across systems — only the precise glyph outline inside each fixed-width box varies. Layout is deterministic even when rendering isn't. Color emoji are the one exception I bundle a font for: single glyphs, flags, skin tones, and family ZWJ sequences all render as colour, inline and in table cells, from Noto Color Emoji.</p>
+      <h2>The numbers</h2>
+      <p>Measured against <code>WeasyPrint + markdown</code> — the closest pure-Python alternative — on the same documents, on the same machine:</p>
+      <table><thead><tr><th style="text-align:left">Metric</th><th style="text-align:left">inkmd</th><th style="text-align:left">WeasyPrint</th><th style="text-align:left">Ratio</th></tr></thead><tbody><tr><td style="text-align:left">Install size</td><td style="text-align:left">10.5 MB</td><td style="text-align:left">74.6 MB</td><td style="text-align:left">7.1x smaller</td></tr><tr><td style="text-align:left">Cold render, ~1 page</td><td style="text-align:left">132 ms</td><td style="text-align:left">814 ms</td><td style="text-align:left">6.2x faster</td></tr><tr><td style="text-align:left">Cold render, ~11 pages</td><td style="text-align:left">174 ms</td><td style="text-align:left">1.40 s</td><td style="text-align:left">8.0x faster</td></tr><tr><td style="text-align:left">Peak memory, ~11 pages</td><td style="text-align:left">19 MB</td><td style="text-align:left">122 MB</td><td style="text-align:left">6.4x lower</td></tr></tbody></table>
+      <p>The full methodology and the benchmark script live in the repo, so you can reproduce it rather than trust me.</p>
+      <h2>Where it loses</h2>
+      <p>I'm not going to pretend it wins everywhere. WeasyPrint compresses content streams, so for long documents its PDFs come out smaller. It supports full Unicode, page-splitting CSS, and a styling model inkmd has no intention of growing. Emoji are the exception that already renders (full colour, as above); for text scripts the base-14 fonts don't cover — CJK, Cyrillic — inkmd falls back to <code>?</code> until text-font embedding lands in a later release.</p>
+      <p>The trade is deliberate, and the honest framing is "the right tool depends on your input and your environment." inkmd is the one for the environment where installing a 200MB browser isn't an option — the tool you'd write yourself over a free weekend if you refused to take that dependency, and then kept polishing until the kerning was right.</p>
+    </article>
+
+    <article>
+      <h2>Directing the build</h2>
+      <p><em>18 May 2026 · 7 min read · workflow, ai, torch</em></p>
+      <p>140 modules, one developer, zero dependencies. What it actually means to build software by directing AI tooling end to end.</p>
+      <p>People hear "built with AI" and picture a prompt and a shrug. That's not the job. The job is architecture, decomposition, and review — the model is the hands, not the head. The interesting question isn't whether AI can write code. It obviously can. The question is what a developer has to be <em>good at</em> for the result to be something you'd put your name on.</p>
+      <p>TORCH is my honest answer to that. It's a self-hosted IDE for ROM hacking: a 140-module, zero-dependency Python codebase with a custom domain-specific language, a bidirectional compiler, a web GUI, and a full ROM build pipeline. I built it solo, by orchestrating AI development across hundreds of focused work streams. Here's the part that isn't magic.</p>
+      <h2>I own the architecture</h2>
+      <p>Before any code gets written, the shape of the system exists — in my head and on paper. Where the boundaries are, what each module is allowed to know about, which way the dependencies point.</p>
+      <p>The four-layer pipeline in <code>inkmd</code> — parser, render, layout, pdf, each strictly above the last — is a decision I made, not one a model stumbled into. A constraint like <em>no layer imports a higher one</em> keeps a codebase honest for years, and it only holds if someone is enforcing it. Hand the architecture to the model and you get something that runs today and is a swamp in three months: every file importing every other, no seams, nowhere to stand. Architecture is the part that doesn't show up in a single prompt, which is exactly why it's the part a human has to own.</p>
+      <h2>I break the work into streams</h2>
+      <p>A 140-module project is not one conversation. It's hundreds of small, well-scoped tasks, each with clear inputs, clear outputs, and a test I can point at. The decomposition <em>is</em> the skill.</p>
+      <p>Take TORCH's compiler. "Build a bidirectional compiler" is not a work stream — it's a wish. But "parse this TorScript statement into this AST node," "lower that node back to the original source," "round-trip a fixture file and assert it's byte-stable" — those are streams. Each one is something a model can nail in a single focused pass. The NPC editor, the trainer editor, the encounter tables, the ROM build step: separate streams, separate contracts, assembled against an architecture that already had a slot for each of them.</p>
+      <p>Get the decomposition right and the work almost schedules itself. Get it wrong and you spend the afternoon untangling output that technically satisfied a vague request and solved the wrong problem.</p>
+      <h2>I review the output</h2>
+      <pre><code>inkmd: 788 tests across 33 files. Stdlib-only. Python 3.9+.</code></pre>
+      <p>Tests are the contract a stream is held to, and they're the first reviewer — but not the last. I read what comes back. Not as a formality: the model is fast, tireless, and <em>occasionally confidently wrong</em>, and a passing test suite doesn't catch a design that's subtly the wrong shape. The only defence against confident wrongness is someone who understands the system well enough to see it. That's the job that doesn't get automated.</p>
+      <blockquote><p>Directing AI well is not the absence of engineering. It's engineering with a faster, more literal pair of hands — and the same responsibility for the result.</p></blockquote>
+      <h2>Why it's still engineering</h2>
+      <p>The skeptical read is that this is just prompting with extra steps. I'd argue the opposite: it concentrates the work onto the parts that were always the hard parts. You can no longer hide a weak mental model behind the hours it takes to type. If you can't say what the system should look like, can't break it into pieces with crisp contracts, and can't tell good output from plausible-looking output, the tooling won't save you — it'll just help you build the wrong thing faster.</p>
+      <p>The output looks the same as any other well-built project, because that's the point. The method should be invisible in the result.</p>
+    </article>
+
+    <article>
+      <h2>A locked door for an autonomous agent</h2>
+      <p><em>29 Apr 2026 · 7 min read · security, agents, nightjar</em></p>
+      <p>Nightjar is an LLM agent reachable 24/7 over email. The interesting engineering isn't the agent — it's the boundary around it.</p>
+      <p>An autonomous agent that anyone can reach is an autonomous agent anyone can abuse. Nightjar is reachable around the clock over an email channel, runs daily in personal production, and the part I spent the most time on isn't the agent — it's everything that decides whether the agent is allowed to lift a finger.</p>
+      <p>The model itself is the easy half. Wiring Claude up to a mailbox is an afternoon. Making it safe to leave running, unattended, reachable by the entire internet — that's the half that's actually engineering. And the single most important decision behind it is this: <strong>the agent never acts on its own. It drafts. I approve.</strong></p>
+      <h2>Spoofing dies first: DMARC</h2>
+      <p>Email is a wonderful interface for an assistant: asynchronous, universal, already on every device I own, no app to build. It's also a terrible medium for trust. The <code>From</code> header is a suggestion — anyone can put any address in it.</p>
+      <p>So before anything else happens, Nightjar reads the <code>Authentication-Results</code> header stamped by one specific trusted mail server — Gmail's <code>mx.google.com</code> — and proceeds only on <code>dmarc=pass</code>. A forged sender doesn't earn a clever rejection somewhere deep in the pipeline; it dies at the front gate, because the gate doesn't believe the envelope.</p>
+      <h2>The principal proves it's me: HOTP</h2>
+      <p>DMARC tells me a message genuinely came from the domain it claims. It doesn't tell me <em>I</em> sent it. For that, the principal — me — puts a six-digit one-time code in the subject line: <strong>HOTP by default (RFC 4226)</strong> — counter-based, not time-based — with TOTP (RFC 6238) available as a configurable alternative. The daemon verifies that code <strong>before the LLM is ever called</strong>, with replay protection so a captured code can't be reused.</p>
+      <pre><code>1. DMARC pass at trusted authserv (mx.google.com)
+      2. HOTP code valid (RFC 4226, checked pre-LLM)
+      3. Email parsed as untrusted data
+      4. Single Anthropic API call → draft_plan
+      5. Plan queued for human approval (tiered)</code></pre>
+      <p>No valid code, no work done — and repeated failures trip a dead-man's-switch counter that pauses the agent rather than letting someone grind against it. There's no signature scheme, no keyring, nothing exotic. A shared secret and a hard pre-LLM check is enough — and in security, "enough and boring" beats "novel" every time.</p>
+      <h2>Everyone else: contacts, and a scope classifier</h2>
+      <p>Not every message is from me. A handful of verified contacts are allow-listed — they don't carry a one-time code; being on the list <em>is</em> their credential. But being allowed to talk to the agent is not the same as being allowed to make it do things.</p>
+      <p>So a contact's message hits a <strong>scope classifier</strong> before any reply is drafted. In scope — scheduling, relaying a message — and the agent drafts a bounded reply. Out of scope — anything touching private data or my accounts — and it returns a <strong>canned decline with no model call at all</strong>. The cheapest way to stop the LLM doing something it shouldn't is to never hand it the request.</p>
+      <blockquote><p>Authentication tells you who's knocking. Authorization decides which doors open. They are not the same check — and conflating them is how agents get talked into things.</p></blockquote>
+      <h2>The email is data, not instructions</h2>
+      <p>This is the idea I'd want a reviewer to leave with. Inbound email — subject, body, sender — is treated as <strong>untrusted data</strong>, never as commands. It reaches the model inside delimited blocks, explicitly framed as data to reason about, and the model's <em>only</em> output is a proposed plan: a <code>draft_plan</code>. It has no direct path to send mail, touch a calendar, or run anything.</p>
+      <p>Prompt injection stops being existential when the model's output can't <em>do</em> anything by itself. The worst a malicious email can achieve is to draft a bad plan — which then runs straight into the part that actually matters.</p>
+      <h2>The agent drafts; I approve</h2>
+      <p>Every action Nightjar proposes lands in a <strong>tiered approval queue</strong>, ranked by blast radius. Read-only summaries are light-touch. Anything irreversible needs explicit double-confirmation. Contact-triggered actions are hard-capped at tier 3 — never the irreversible tier-4 actions — and can't self-send, and crucially, <strong>that cap is enforced in Python, not in the prompt.</strong> A model can be argued with; an <code>if</code> statement cannot.</p>
+      <p>So even if an email is convincing, even if the model is entirely taken in, the result is a queued draft I have to approve. The expensive, unpredictable component sits <em>inside</em> a boundary built from cheap, predictable, testable code.</p>
+      <h2>One call, not a loop</h2>
+      <p>There's no autonomous agent loop here, chewing through tool calls until it decides it's finished. Each email triggers exactly <strong>one</strong> Anthropic Messages API call that returns a plan, and then control hands back to the deterministic Python around it. Bounded by construction — easier to reason about, and far easier to defend.</p>
+      <h2>Running it on myself</h2>
+      <p>Nightjar isn't a demo that lives in a branch. It runs daily, in production, on my behalf — so the blast radius of getting this wrong is <em>my</em> inbox, <em>my</em> calendar, <em>my</em> accounts. An agent you leave running unattended is a system you're fully accountable for, which is why the boundary gets more rigour than the agent does. The clever part was never teaching it to act. It was making sure it can't — until I say so.</p>
+    </article>
+  </div>
+
   <div class="up-bg"></div>
   <svg class="up-tide" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
     <defs>

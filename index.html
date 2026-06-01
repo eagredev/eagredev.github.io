@@ -36,6 +36,49 @@
   <link rel="stylesheet" href="mobile.css" />
 </head>
 <body>
+  <!-- ============================================================
+       Machine-readable content layer.
+       A plain-HTML mirror of this page for search engines and AI
+       agents that do not run JavaScript (the interactive React app
+       below is invisible to them). Hidden from human visitors via the
+       `hidden` attribute — applied by the browser before first paint,
+       so there is no flash. Keep this TRUTHFUL and roughly in sync
+       with the real site; it is an honest fallback, not marketing spin.
+       ============================================================ -->
+  <div id="seo-content" hidden>
+    <h1>Eagre — Dylan Moir</h1>
+    <p>Dylan Moir, who publishes under the alias <strong>Eagre</strong>, is a Python engineer in Scotland working on developer tooling and LLM agents. He builds security-conscious software by directing AI tooling end to end — and reviewing every output that ships. Everything on this site was built that way: solo, architected by him, assembled with AI, and reviewed before it shipped.</p>
+    <p>An <em>eagre</em> is a tidal bore — the wave that runs upstream, against the current, when an incoming tide is forced into a narrowing river.</p>
+
+    <h2>How I work</h2>
+    <p>"Built with AI" usually conjures a prompt and a shrug. That isn't the job. The model is the hands, not the head — the work is judgement, and the method should be invisible in the result.</p>
+    <ol>
+      <li><strong>Architect first.</strong> The shape of the system — layering rules, security boundaries, the public surface — exists before any code does. Those are decisions I own, not ones a model stumbles into.</li>
+      <li><strong>Decompose into streams.</strong> A large system isn't one conversation. It's hundreds of small, well-scoped tasks, each with clear inputs, clear outputs, and a test to point at. The decomposition is the skill.</li>
+      <li><strong>Direct the tools.</strong> I build primarily with Claude Code, treating it as a fast, literal, tireless pair of hands — pointed at one focused stream at a time and held to the architecture I set.</li>
+      <li><strong>Review everything.</strong> The tools are fast, tireless, and occasionally confidently wrong. The only defence against the last one is a developer who understands exactly what came back, so every output is reviewed before it ships.</li>
+    </ol>
+
+    <h2>Selected work</h2>
+    <h3>inkmd — deterministic Markdown-to-PDF compiler</h3>
+    <p>A pure-Python, zero-dependency compiler that turns Markdown into a PDF, published on PyPI under an MIT licence. Most renderers drag in a headless browser and the system's fonts; inkmd installs in under a second and emits byte-identical output on every platform, every run. Around 788 tests, standard-library only, Python 3.9+. It typesets this site's own blog. Repository: github.com/eagredev/inkmd</p>
+    <h3>Nightjar — human-in-the-loop email agent</h3>
+    <p>An always-on (24/7) autonomous LLM agent reachable over a cryptographically-authenticated email channel. It reads the inbox and drafts replies, but never sends on its own. Every message must clear DMARC at a trusted mail server; the principal signs with a one-time HOTP code verified before the model is ever called; inbound mail is treated as untrusted data, not commands. Authentication is not authorization — a human approves through a tiered queue before anything leaves. A defence-in-depth architecture I designed and prior-art-reviewed; it runs daily in personal production. Repository: github.com/eagredev/nightjar</p>
+    <h3>TORCH — ROM-hacking IDE with a custom DSL</h3>
+    <p>A zero-dependency Python IDE for Game Boy Advance ROM hacking: 140 modules, 7,000+ tests, a custom domain-specific language (TorScript) and a bidirectional compiler that translates TorScript to and from poryscript. Write compact TorScript and watch the scene play live, or decompile verbose vanilla scripts back into something half the size, with names validated against your project's real headers. Built solo by orchestrating AI development across hundreds of focused work streams. Repository: github.com/eagredev/TORCH</p>
+
+    <h2>Writing — Upstream, the eagre log</h2>
+    <p>Notes on building developer tooling and LLM agents by directing AI end to end — zero-dependency design, security boundaries, and the craft of reviewing output you didn't type. Typeset by inkmd.</p>
+    <ul>
+      <li><strong>Zero dependencies, on purpose</strong> — why inkmd refuses the headless browser and system libraries every other Markdown-to-PDF tool reaches for, and how it survives the trip into a locked-down container.</li>
+      <li><strong>Directing the build</strong> — 140 modules, one developer, zero dependencies: what it actually means to build software by directing AI tooling end to end.</li>
+      <li><strong>A locked door for an autonomous agent</strong> — Nightjar is reachable 24/7 over email; the interesting engineering isn't the agent, it's the boundary around it.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Open to AI-assisted developer roles. Email: eagre.dev@gmail.com · GitHub: github.com/eagredev · LinkedIn: linkedin.com/in/dylanmoir</p>
+  </div>
+
   <div id="root"></div>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
