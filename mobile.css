@@ -43,6 +43,8 @@
   .wb-title { font-size: 11px; }
   .wb-body { display: block; }
   .demo.active { display: block; }
+  /* wrapper must not stretch the stacked split — let panes size to content */
+  .demo-live { display: block; }
 
   /* covered card: compact + comfortably padded instead of a tall raw editor */
   .cover { min-height: 380px; }
