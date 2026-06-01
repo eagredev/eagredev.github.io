@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Upstream — Eagre</title>
   <meta name="description" content="A post from Upstream — the eagre log, by Dylan Moir." />
-  <link rel="canonical" href="https://eagredev.github.io/blog/" />
+  <link rel="canonical" href="https://eagre.dev/blog/" />
 
   <!-- Favicons, web-app manifest, browser UI colour -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -19,12 +19,25 @@
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Upstream — the eagre log" />
   <meta property="og:description" content="A post from Upstream — the eagre log, by Dylan Moir." />
-  <meta property="og:url" content="https://eagredev.github.io/blog/" />
-  <meta property="og:image" content="https://eagredev.github.io/preview.png" />
+  <meta property="og:url" content="https://eagre.dev/blog/" />
+  <meta property="og:image" content="https://eagre.dev/preview.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Upstream — the eagre log" />
   <meta name="twitter:description" content="A post from Upstream — the eagre log, by Dylan Moir." />
-  <meta name="twitter:image" content="https://eagredev.github.io/preview.png" />
+  <meta name="twitter:image" content="https://eagre.dev/preview.png" />
+  <script>
+    /* Self-canonicalize to the specific post as early as possible —
+       before posts.js and the markdown engine run — so each post points
+       at its own URL rather than the blog index. Invalid slugs are reset
+       to the index by the not-found branch below. */
+    (function () {
+      var p = new URLSearchParams(location.search).get("p");
+      if (!p) return;
+      var url = "https://eagre.dev/blog/post.html?p=" + encodeURIComponent(p);
+      var c = document.querySelector('link[rel="canonical"]'); if (c) c.setAttribute("href", url);
+      var o = document.querySelector('meta[property="og:url"]'); if (o) o.setAttribute("content", url);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -88,6 +101,9 @@
           '<h1 class="up-art-title">Lost the thread</h1>' +
           '<p class="up-art-dek">That post drifted off somewhere. Head back to the index and pick another.</p>';
         document.title = "Not found — Upstream";
+        // Unknown slug: canonicalize back to the blog index, not a dead post URL.
+        var bc = document.querySelector('link[rel="canonical"]'); if (bc) bc.setAttribute("href", "https://eagre.dev/blog/");
+        var bo = document.querySelector('meta[property="og:url"]'); if (bo) bo.setAttribute("content", "https://eagre.dev/blog/");
         return;
       }
 
@@ -96,7 +112,7 @@
 
       // keep search/share metadata in sync with the post being viewed
       (function () {
-        var url = "https://eagredev.github.io/blog/post.html?p=" + encodeURIComponent(p.slug);
+        var url = "https://eagre.dev/blog/post.html?p=" + encodeURIComponent(p.slug);
         function setMeta(sel, val) { var m = document.querySelector(sel); if (m) m.setAttribute("content", val); }
         setMeta('meta[name="description"]', p.dek);
         setMeta('meta[property="og:title"]', p.title + " — Upstream");
