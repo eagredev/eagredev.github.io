@@ -58,16 +58,16 @@ Measured against \`WeasyPrint + markdown\` — the closest pure-Python alternati
 
 | Metric | inkmd | WeasyPrint | Ratio |
 | --- | --- | --- | --- |
-| Install size | 10.5 MB | 74.6 MB | 7.1x smaller |
-| Cold render, ~1 page | 132 ms | 814 ms | 6.2x faster |
-| Cold render, ~11 pages | 174 ms | 1.40 s | 8.0x faster |
+| Cold render, ~1 page | 138 ms | 879 ms | 6.4x faster |
+| Cold render, ~11 pages | 227 ms | 1.64 s | 7.2x faster |
+| Install size | 22.2 MB | 74.6 MB | 3.4x smaller |
 | Peak memory, ~11 pages | 19 MB | 122 MB | 6.4x lower |
 
-The full methodology and the benchmark script live in the repo, so you can reproduce it rather than trust me.
+The full methodology and the benchmark script live in the repo, so you can reproduce it rather than trust me. (These numbers were re-measured after bundling Noto Color Emoji — which is why the install is bigger than it used to be. The real advantage was always 3.4x smaller, and zero system dependencies versus WeasyPrint's 350-550 MB of system packages.)
 
 ## Where it loses
 
-I'm not going to pretend it wins everywhere. WeasyPrint compresses content streams, so for long documents its PDFs come out smaller. It supports full Unicode, page-splitting CSS, and a styling model inkmd has no intention of growing. Emoji are the exception that already renders (full colour, as above); for text scripts the base-14 fonts don't cover — CJK, Cyrillic — inkmd falls back to \`?\` until text-font embedding lands in a later release.
+I'm not going to pretend it wins everywhere. WeasyPrint compresses content streams, so for long documents its PDFs come out smaller. It supports full Unicode, page-splitting CSS, and a styling model inkmd has no intention of growing. Emoji are the exception that already renders (full colour, as above); for text scripts the base-14 fonts don't cover — CJK, Cyrillic text — inkmd falls back to \`?\` until text-font embedding lands in a later release.
 
 The trade is deliberate, and the honest framing is "the right tool depends on your input and your environment." inkmd is the one for the environment where installing a 200MB browser isn't an option — the tool you'd write yourself over a free weekend if you refused to take that dependency, and then kept polishing until the kerning was right.`,
   },
@@ -99,7 +99,7 @@ Get the decomposition right and the work almost schedules itself. Get it wrong a
 ## I review the output
 
 \`\`\`
-inkmd: 788 tests across 33 files. Stdlib-only. Python 3.9+.
+inkmd: 808 tests across 34 files, passing on CPython 3.9 through 3.13. Stdlib-only.
 \`\`\`
 
 Tests are the contract a stream is held to, and they're the first reviewer — but not the last. I read what comes back. Not as a formality: the model is fast, tireless, and *occasionally confidently wrong*, and a passing test suite doesn't catch a design that's subtly the wrong shape. The only defence against confident wrongness is someone who understands the system well enough to see it. That's the job that doesn't get automated.

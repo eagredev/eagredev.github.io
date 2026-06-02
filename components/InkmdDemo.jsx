@@ -9,15 +9,15 @@ dependencies, *byte-deterministic*.
 ## Highlights
 
 - Render is ~6x faster than WeasyPrint
-- Installs in under a second (~10 MB)
+- Installs from pip with zero system dependencies (~22 MB)
 - Runs on Lambda, Alpine, ~~a Steam Deck~~ anything
 
 > No Chrome binary. No \`apt-get\`. No system fonts.
 
 | Metric        | inkmd  | Ratio       |
 | ------------- | ------ | ----------- |
-| Install size  | 10.5MB | 7.1x smaller|
-| Cold render   | 132ms  | 6.2x faster |
+| Cold render   | 138ms  | 6.4x faster |
+| Install size  | 22.2MB | 3.4x smaller|
 
 \`\`\`python
 import inkmd

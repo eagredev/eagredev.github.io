@@ -374,10 +374,12 @@ function TorchDemo() {
                   <code>{"@ object event: <Name> at x,y, facing <dir>"}</code><span>spawn tile + initial facing (from map data)</span>
                   <code>{"alias <name> <ref>"}</code><span>name an actor (object event / npcN)</span>
                   <code>{"label <Name> … end"}</code><span>a script block</span>
+                  <code>{"lock … release"}</code><span>freeze / free the overworld for a cutscene</span>
                   <code>{'"dialogue line"'}</code><span>a line of text → msgbox</span>
                   <code>{"<actor> walk <dir> <dir>…"}</code><span>movement (or: walk &lt;dir&gt; &lt;count&gt;)</span>
                   <code>{"<actor> face <dir|player>"}</code><span>turn to face</span>
                   <code>{"give ITEM_* [n]"}</code><span>give an item</span>
+                  <code>{"flag set FLAG_*"}</code><span>set a story flag (checked vs project)</span>
                 </div>
               </div>
             )}
